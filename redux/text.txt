@@ -1,0 +1,35 @@
+console.log("welcome to my first redux snippet")
+// first import the redux
+const redux=require("redux")
+const createStore=redux.legacy_createStore;
+// create reducer
+
+const initialState={
+    amount:1000
+}
+
+const reducer=(state=initialState,action)=>{
+    switch(action.type){
+        case "bargaining":return{
+            ...state,
+            amount:state.amount-300,
+        }
+        default:return state
+    }
+}
+const action=()=>{
+    return{
+    type:"bargaining",
+    info:"First redux action"
+}
+}
+
+const store=createStore(reducer);
+console.log("initialState",store.getState())
+//dispatch the action
+const unsubscribe=store.subscribe(()=>console.log("updated state",store.getState()))
+store.dispatch(action())
+store.dispatch(action())
+store.dispatch(action())
+store.dispatch(action())
+unsubscribe()
