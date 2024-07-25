@@ -1,93 +1,69 @@
-// Create the action types
-const FETCH_DATA = 'FETCH_DATA';
-const FETCH_DATA_SUCCESS = 'FETCH_DATA_SUCCESS';
-const FETCH_DATA_FAILURE = 'FETCH_DATA_FAILURE';
+//let see how to fetch data in redux
+// first we will require all requirement 
+const { default: axios } = require("axios");
+const redux =require("redux")
+const createStore = redux.legacy_createStore;
+const applyMiddleware=redux.applyMiddleware;
+const thunkMiddleware= require("redux-thunk").thunk;
 
-// Import Redux and middleware
-const redux = require('redux');
-const axios = require('axios');
-const thunkMiddleware = require('redux-thunk').default;
-const applyMiddleware = redux.applyMiddleware;
-const createStore = redux.createStore;
+const FETCH_REQUEST="FETCH_REQUEST";
+const FETCH_SUCCESS="FETCH_SUCCESS";
+const FETCH_FAILURE="FETCH_FAILURE";
 
-// Define initial state
-const initialState = {
-    loading: false,
-    data: [],
-    error: ''
-};
-
-// Action creators
-const fetchRequest = () => {
-    return {
-        type: FETCH_DATA,
-    };
-};
-
-const fetchDataSuccess = (users) => {
-    return {
-        type: FETCH_DATA_SUCCESS,
-        payload: users
-    };
-};
-
-const fetchDataFailure = (error) => {
-    return {
-        type: FETCH_DATA_FAILURE,
-        payload: error
-    };
-};
-
-// Reducer
-const reducer = (state = initialState, action) => {
-    switch (action.type) {
-        case FETCH_DATA:
-            return {
-                ...state,
-                loading: true
-            };
-        case FETCH_DATA_SUCCESS:
-            return {
-                ...state,
-                loading: false,
-                data: action.payload,
-                error: ''
-            };
-        case FETCH_DATA_FAILURE:
-            return {
-                ...state,
-                loading: false,
-                data: [],
-                error: action.payload
-            };
-        default:
-            return state;
-    }
-};
-
-// Create the Redux store
-const store = createStore(reducer, applyMiddleware(thunkMiddleware));
-
-// Async action creator using thunk middleware
-function fetchData() {
-    return function (dispatch) {
-        dispatch(fetchRequest());
-        axios.get('https://jsonplaceholder.typicode.com/posts')
-            .then((res) => {
-                const users = res.data.map(user => user.title);
-                dispatch(fetchDataSuccess(users));
-            })
-            .catch((err) => {
-                dispatch(fetchDataFailure(err.message));
-            });
-    };
+const initial_state={
+    loading:false,
+    user:[],
+    error:""
 }
 
-// Subscribe to store updates
-store.subscribe(() => console.log(store.getState()));
+const fetch_request=()=>{
+   return{ type:FETCH_REQUEST
+}
+}
+const fetch_success=(user)=>{
+    return{ type:FETCH_SUCCESS,payload:user}
+}
+const fetch_failure=(error)=>{
+    return{ type:FETCH_FAILURE,payload:error}
+}
 
-// Dispatch the async action
-store.dispatch(fetchData());
+// let create the reducer;
+const reducer=(state=initial_state,action)=>{
+    switch(action.type){
+        case FETCH_REQUEST:return{
+            ...state,
+            loading:true
+        }
+        case FETCH_SUCCESS:return{
+            ...state,
+            loading:false,
+            user:action.payload,
+        }
+        case FETCH_FAILURE:return{
+            ...state,
+            loading:false,
+            error:action.payload,
+        }
+        default :return state
+    }
+}
+const fetch_data=()=>{
+    return function(dispatch){
+        dispatch(fetch_request())
+        axios('https://jsonplaceholder.typicode.com/posts')
+        .then((res)=>{
+            let user=res.data.map((item)=>item["title"])
+            dispatch(fetch_success(user))
+        })
+        .catch((err)=>{
+            dispatch(fetch_failure(err.message))
+        })
+    }
+}
+// let create the store
 
+const store=createStore(reducer,applyMiddleware(thunkMiddleware));
+//console.log(store.getState());
+store.subscribe(()=>console.log("updated State",store.getState()));
+store.dispatch(fetch_data())
 
-// there is some error in this code  
